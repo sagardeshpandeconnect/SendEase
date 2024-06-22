@@ -121,6 +121,16 @@ function App() {
 
   // const formattedTime = convertToIST(utcTimestamp);
 
+  function formatFileSize(fileSizeInBytes) {
+    const fileSizeInKB = fileSizeInBytes / 1024;
+    if (fileSizeInKB < 1024) {
+      return `${fileSizeInKB.toFixed(2)} KB`;
+    } else {
+      const fileSizeInMB = fileSizeInKB / 1024;
+      return `${fileSizeInMB.toFixed(2)} MB`;
+    }
+  }
+
   return (
     <Box p={4}>
       <h1>File Upload</h1>
@@ -132,6 +142,8 @@ function App() {
             ref={fileInputRef} // Assign ref to input field
           />
         </FormControl>
+        {file && <p>Selected file size: {formatFileSize(file.size)} </p>}
+
         <Button mt={4} colorScheme="teal" type="submit">
           Upload
         </Button>
@@ -173,6 +185,7 @@ function App() {
                 {copyButtonText}
               </Button>
               <Text>{convertToIST(file.upload_time)}</Text>
+              <Text>{formatFileSize(file.size)}</Text>
             </Box>
           </Box>
         </Box>

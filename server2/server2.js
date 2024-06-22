@@ -8,21 +8,14 @@ const cors = require('cors');
 const pool = require("./database/connection");
 const crypto = require('crypto');
 
-
-
-
 const app = express();
 const port = 3001;
 
 // Enable CORS
 app.use(cors());
 
-
-
 // Middleware
 app.use(express.json());
-
-
 
 // Multer setup
 const storage = multer.memoryStorage();
@@ -32,6 +25,8 @@ const upload = multer({ storage: storage });
 const generateToken = () => {
   return crypto.randomBytes(10).toString('hex');
 };
+
+
 
 
 // Endpoint to upload files
@@ -44,8 +39,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
   const client = await pool.connect();
   try {
-    const query = 'INSERT INTO files (filename, mimetype, content, token) VALUES ($1, $2, $3, $4) RETURNING id';
-    const values = [file.originalname, file.mimetype, file.buffer, token];
+    const query = 'INSERT INTO files (filename, mimetype, content,size, token) VALUES ($1, $2, $3, $4, $5) RETURNING id';
+    const values = [file.originalname, file.mimetype, file.buffer,file.size, token];
 
     const result = await client.query(query, values);
     const fileId = result.rows[0].id;
