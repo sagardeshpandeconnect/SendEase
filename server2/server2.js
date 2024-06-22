@@ -1,7 +1,15 @@
+const loadEnv = require("./config/env");
+// Load environment variables
+loadEnv();
+
 const express = require('express');
 const multer = require('multer');
-const { Pool } = require('pg');
 const cors = require('cors');
+const pool = require("./database/connection");
+const crypto = require('crypto');
+
+
+
 
 const app = express();
 const port = 3001;
@@ -9,20 +17,22 @@ const port = 3001;
 // Enable CORS
 app.use(cors());
 
-// PostgreSQL connection
-const pool = new Pool({
-  connectionString: 'postgresql://sagar:f7urwcONDFHv42rq1y4tyw@curvy-panther-4888.7s5.aws-ap-south-1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full', // Update this with your serverless CockroachDB connection URL
-  ssl: {
-    rejectUnauthorized: false,
-  }
-});
+
 
 // Middleware
 app.use(express.json());
 
+
+
 // Multer setup
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// Generate a unique token
+const generateToken = () => {
+  return crypto.randomBytes(10).toString('hex');
+};
+
 
 // Endpoint to upload files
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -30,15 +40,16 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   if (!file) {
     return res.status(400).send('No file uploaded.');
   }
+  const token = generateToken();
 
   const client = await pool.connect();
   try {
-    const query = 'INSERT INTO files (filename, mimetype, content) VALUES ($1, $2, $3) RETURNING id';
-    const values = [file.originalname, file.mimetype, file.buffer];
+    const query = 'INSERT INTO files (filename, mimetype, content, token) VALUES ($1, $2, $3, $4) RETURNING id';
+    const values = [file.originalname, file.mimetype, file.buffer, token];
 
     const result = await client.query(query, values);
     const fileId = result.rows[0].id;
-    res.status(200).send({ message: `File uploaded successfully with ID: ${fileId}`, downloadLink: `http://localhost:3001/download/${fileId}` });
+    res.status(200).send({ message: `File uploaded successfully with ID: ${fileId}`, downloadLink: `http://localhost:3001/download/${fileId}`, shareableLink: `http://localhost:3001/share/${token}` });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -101,6 +112,32 @@ app.get('/files', async (req, res) => {
     const query = 'SELECT * FROM files';
     const result = await client.query(query);
     res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  } finally {
+    client.release();
+  }
+});
+
+// Endpoint to download files via shareable link
+app.get('/share/:token', async (req, res) => {
+  const token = req.params.token;
+  // console.log(req)
+
+  const client = await pool.connect();
+  try {
+    const query = 'SELECT filename, mimetype, content FROM files WHERE token = $1';
+    const result = await client.query(query, [token]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('File not found.');
+    }
+
+    const file = result.rows[0];
+    res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
+    res.setHeader('Content-Type', file.mimetype);
+    res.send(file.content);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
