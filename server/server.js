@@ -1,13 +1,11 @@
-const express = require("express");
 const loadEnv = require("./config/env");
-const connectDB = require("./database/connection");
-const setupMiddlewares = require("./middlewares");
-const setupRoutes = require("./routes");
-const { uploadDataToDatabase } = require("./services/uploadData");
-
-
 // Load environment variables
 loadEnv();
+
+const express = require('express');
+const cors = require('cors');
+const setupMiddlewares = require("./middlewares");
+const fileRoutes = require('./routes/fileRoutes');
 
 // Create Express app
 const app = express();
@@ -15,14 +13,13 @@ const app = express();
 // Setup middlewares
 setupMiddlewares(app);
 
-// Setup routes
-setupRoutes(app);
+// Enable CORS
+app.use(cors())
 
-// Connect to the database and start the server
-const PORT = process.env.PORT || 6001;
-connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server started on port: ${PORT}`));
+// Routes
+app.use('/files', fileRoutes);
+
+const port = 3001;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
-
-// Function to upload file to database
-uploadDataToDatabase();

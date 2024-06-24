@@ -1,21 +1,6 @@
-const loadEnv = require("./config/env");
-// Load environment variables
-loadEnv();
-
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const pool = require("./database/connection");
+const pool = require("../database/connection");
 const crypto = require('crypto');
-
-const app = express();
-const port = 3001;
-
-// Enable CORS
-app.use(cors());
-
-// Middleware
-app.use(express.json());
+const multer = require('multer');
 
 // Multer setup
 const storage = multer.memoryStorage();
@@ -26,11 +11,7 @@ const generateToken = () => {
   return crypto.randomBytes(10).toString('hex');
 };
 
-
-
-
-// Endpoint to upload files
-app.post('/upload', upload.single('file'), async (req, res) => {
+const uploadFile = async (req, res) => {
   const file = req.file;
   if (!file) {
     return res.status(400).send('No file uploaded.');
@@ -39,22 +20,21 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
   const client = await pool.connect();
   try {
-    const query = 'INSERT INTO files (filename, mimetype, content,size, token) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-    const values = [file.originalname, file.mimetype, file.buffer,file.size, token];
+    const query = 'INSERT INTO files (filename, mimetype, content, size, token) VALUES ($1, $2, $3, $4, $5) RETURNING id';
+    const values = [file.originalname, file.mimetype, file.buffer, file.size, token];
 
     const result = await client.query(query, values);
     const fileId = result.rows[0].id;
-    res.status(200).send({ message: `File uploaded successfully with ID: ${fileId}`, downloadLink: `http://localhost:3001/download/${fileId}`, shareableLink: `http://localhost:3001/share/${token}` });
+    res.status(200).send({ message: `File uploaded successfully with ID: ${fileId}`, downloadLink: `http://localhost:3001/api/files/download/${fileId}`, shareableLink: `http://localhost:3001/api/files/share/${token}` });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
   } finally {
     client.release();
   }
-});
+};
 
-// Endpoint to download files
-app.get('/download/:id', async (req, res) => {
+const downloadFile = async (req, res) => {
   const fileId = req.params.id;
 
   const client = await pool.connect();
@@ -76,10 +56,9 @@ app.get('/download/:id', async (req, res) => {
   } finally {
     client.release();
   }
-});
+};
 
-// Endpoint to delete files
-app.delete('/delete/:id', async (req, res) => {
+const deleteFile = async (req, res) => {
   const fileId = req.params.id;
 
   const client = await pool.connect();
@@ -98,10 +77,9 @@ app.delete('/delete/:id', async (req, res) => {
   } finally {
     client.release();
   }
-});
+};
 
-// Endpoint to fetch all files
-app.get('/files', async (req, res) => {
+const fetchAllFiles = async (req, res) => {
   const client = await pool.connect();
   try {
     const query = 'SELECT * FROM files';
@@ -113,12 +91,10 @@ app.get('/files', async (req, res) => {
   } finally {
     client.release();
   }
-});
+};
 
-// Endpoint to download files via shareable link
-app.get('/share/:token', async (req, res) => {
+const shareFile = async (req, res) => {
   const token = req.params.token;
-  // console.log(req)
 
   const client = await pool.connect();
   try {
@@ -139,8 +115,13 @@ app.get('/share/:token', async (req, res) => {
   } finally {
     client.release();
   }
-});
+};
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+module.exports = {
+  uploadFile,
+  downloadFile,
+  deleteFile,
+  fetchAllFiles,
+  shareFile,
+  upload
+};
