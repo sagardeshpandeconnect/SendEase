@@ -1,8 +1,10 @@
+// hooks/useClipboard.js
+
 import { useState } from "react";
 import { Button } from "@chakra-ui/react";
 import { CopyIcon } from "@chakra-ui/icons";
 
-export const useClipboard = () => {
+const useClipboard = () => {
   const [copyButtonText, setCopyButtonText] = useState(
     <Button
       leftIcon={<CopyIcon />}
@@ -41,7 +43,9 @@ export const useClipboard = () => {
   };
 
   return {
-    copyToClipboard,
     copyButtonText,
+    copyToClipboard,
   };
 };
+
+export default useClipboard;

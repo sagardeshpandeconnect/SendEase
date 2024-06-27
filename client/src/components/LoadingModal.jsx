@@ -8,17 +8,14 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 
-const LoadingModal = ({ isOpen, uploading, deleting }) => {
+const LoadingModal = ({ isOpen, onClose, message }) => {
   return (
-    <Modal isOpen={isOpen} onClose={() => setUploading(false)}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Please wait...</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
-          {uploading && "Uploading file, please wait a moment..."}
-          {deleting && "Deleting file, please wait a moment..."}
-        </ModalBody>
+        <ModalBody>{message}</ModalBody>
       </ModalContent>
     </Modal>
   );
