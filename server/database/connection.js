@@ -1,12 +1,14 @@
-// PostgreSQL connection
-const { Pool } = require('pg');
+const mongoose = require("mongoose");
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Update this with your serverless CockroachDB connection URL
-  ssl: {
-    rejectUnauthorized: false,
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.DATABASE_URL, {
+    });
+    console.log("Connected to Database Successfully");
+  } catch (error) {
+    console.error(`${error} did not connect`);
+    process.exit(1); // Exit process with failure
   }
-});
-// console.log(process.env.DATABASE_URL)
+};
 
-module.exports = pool;
+module.exports = connectDB;

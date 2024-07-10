@@ -5,17 +5,15 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalCloseButton,
 } from "@chakra-ui/react";
 
-const LoadingModal = ({ isOpen, onClose, message }) => {
+const LoadingModal = ({ isOpen, message }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} size={{ base: "xs", md: "md" }} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Please wait...</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>{message}</ModalBody>
+        <ModalHeader padding={4}>Please wait...</ModalHeader>
+        <ModalBody padding={4}>{message}</ModalBody>
       </ModalContent>
     </Modal>
   );

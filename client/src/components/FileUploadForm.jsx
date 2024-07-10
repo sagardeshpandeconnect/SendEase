@@ -1,15 +1,18 @@
 import React, { useCallback } from "react";
-import { Box, Button, FormControl, Input, Flex, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Flex,
+  Text,
+} from "@chakra-ui/react";
 import { ArrowUpIcon } from "@chakra-ui/icons";
 import { useDropzone } from "react-dropzone";
 import formatFileSize from "../utils/formatFileSize";
 
-const FileUploadForm = ({
-  file,
-  handleFileChange,
-  handleUpload,
-  fileInputRef,
-}) => {
+const FileUploadForm = ({ file, handleFileChange, handleUpload }) => {
   const onDrop = useCallback(
     (acceptedFiles) => {
       handleFileChange({ target: { files: acceptedFiles } });
@@ -29,26 +32,9 @@ const FileUploadForm = ({
       width={{ sm: "100%", lg: "50%" }}
       padding={"4"}
     >
-      <h1>File Upload</h1>
       <form onSubmit={handleUpload}>
-        {/* <FormControl>
-          <Box
-            display="flex"
-            justifyContent="flex-start"
-            alignItems="center"
-            mb={4}
-          >
-            <Input
-              type="file"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              padding={"1"}
-              height={"unset"}
-              width={"100%"}
-            />
-          </Box>
-        </FormControl> */}
         <FormControl>
+          <FormLabel htmlFor="file-upload">Upload File</FormLabel>
           <Box
             {...getRootProps()}
             border={"2px dashed gray"}
@@ -59,7 +45,12 @@ const FileUploadForm = ({
             height={"24"}
             alignContent={"center"}
           >
-            <Input {...getInputProps()} />
+            <Input
+              {...getInputProps()}
+              id="file-upload"
+              aria-label="File upload input"
+              title="Upload your file here"
+            />
             {isDragActive ? (
               <Text>Drop the files here...</Text>
             ) : (
@@ -72,6 +63,7 @@ const FileUploadForm = ({
             {file && `Selected file size: ${formatFileSize(file.size)}`}
           </Text>
           <Button
+            size="sm"
             colorScheme="teal"
             type="submit"
             leftIcon={<ArrowUpIcon boxSize={5} />}

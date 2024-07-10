@@ -43,28 +43,47 @@ const FileItem = ({ file, shareableUrl, copyToClipboard, handleDelete }) => {
       borderWidth="1px"
       borderRadius="lg"
       p={{ base: 2, sm: 4, md: 4, lg: 4 }}
+      borderColor={"GrayText"}
     >
-      File Name - {file.filename}
-      <br />
-      <Box display={{ sm: "block", lg: "flex" }} gap={3}>
-        <Text>Uploaded on: {convertToIST(file.upload_time)}</Text>
-        <Text>File Size: {formatFileSize(file.size)}</Text>
-      </Box>
       <Text>
-        Shareble Link:
-        <br />
+        <Text as="span" fontWeight="semibold">
+          File Name
+        </Text>
+        {` : ${file.filename}`}
+      </Text>
+      <Box display={{ sm: "block", lg: "flex" }} gap={3}>
+        <Text>
+          <Text as="span" fontWeight="semibold">
+            Uploaded on
+          </Text>
+          {` : ${convertToIST(file.createdAt)}`}
+        </Text>
+        <Text>
+          <Text as="span" fontWeight="semibold">
+            File Size
+          </Text>
+          {` : ${formatFileSize(file.size)}`}
+        </Text>
+      </Box>
+
+      <Text>
+        <Text as="span" fontWeight="semibold">
+          Shareble Link
+        </Text>
         <a
           href={shareableUrl(file.token)}
           target="_blank"
           rel="noopener noreferrer"
         >
-          {shareableUrl(file.token)}
+          <Text as={"span"} wordBreak="break-all" overflowWrap="break-word">
+            {` : ${shareableUrl(file.token)} `}
+          </Text>
         </a>
       </Text>
       <Box display="flex" alignItems="center">
         <Button colorScheme="teal" leftIcon={<DownloadIcon />} size="sm">
           <a
-            href={`http://localhost:3001/files/download/${file.id}`}
+            href={`http://localhost:3001/files/download/${file._id}`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -77,7 +96,7 @@ const FileItem = ({ file, shareableUrl, copyToClipboard, handleDelete }) => {
         <Button
           ml={2}
           colorScheme="red"
-          onClick={() => handleDelete(file.id)}
+          onClick={() => handleDelete(file._id)}
           leftIcon={<DeleteIcon />}
           size="sm"
         >

@@ -9,7 +9,6 @@ const loadEnv = () => {
     case 'production':
       envFile = ".env.production";
       break;
-    case 'development':
       case 'testing':
         envFile = ".env.testing";
         break;

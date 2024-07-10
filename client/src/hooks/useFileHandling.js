@@ -14,7 +14,7 @@ const useFileHandling = () => {
     try {
       const fetchedFiles = await fetchFiles();
       const sortedFiles = fetchedFiles.sort(
-        (a, b) => new Date(b.upload_time) - new Date(a.upload_time)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt) // Ensure createdAt is the field used for sorting
       );
       setFiles(sortedFiles);
     } catch (error) {
@@ -28,7 +28,7 @@ const useFileHandling = () => {
 
   // Memoize sorted files array
   const sortedFiles = useMemo(() => {
-    return files.sort((a, b) => new Date(b.upload_time) - new Date(a.upload_time));
+    return files.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Ensure createdAt is the field used for sorting
   }, [files]);
 
   // Handle file change
@@ -43,12 +43,12 @@ const useFileHandling = () => {
       alert("Please select a file first!");
       return;
     }
-      // Validate file type client-side before uploading
-      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"]; // Example allowed types
-      if (!allowedTypes.includes(file.type)) {
-        alert("File type not allowed.");
-        return;
-      }
+    // Validate file type client-side before uploading
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"]; // Example allowed types
+    if (!allowedTypes.includes(file.type)) {
+      alert("File type not allowed.");
+      return;
+    }
 
     try {
       setUploading(true);
@@ -69,7 +69,7 @@ const useFileHandling = () => {
 
   // Handle file delete
   const handleDelete = useCallback(async (id) => {
-    setFiles((files) => files.filter((file) => file.id !== id));
+    setFiles((files) => files.filter((file) => file._id !== id)); // Ensure _id is used instead of __id
 
     try {
       setDeleting(true);

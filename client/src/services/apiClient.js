@@ -2,7 +2,7 @@
 
 import axios from "axios";
 
-const BASE_URL = "http://192.168.1.100:3001"; // Replace with your actual backend URL
+const BASE_URL = import.meta.env.VITE_APP_API_URL // Replace with your actual backend URL
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -39,6 +39,7 @@ export const deleteFile = async (id) => {
   try {
     const response = await axiosInstance.delete(`/files/delete/${id}`);
     return response.data;
+    console.log(response.data)
   } catch (error) {
     console.error("Error deleting file:", error);
     throw error;

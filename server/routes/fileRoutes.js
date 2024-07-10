@@ -7,7 +7,7 @@ const upload = fileController.upload;
 
 router.post('/upload', upload.single('file'), fileController.uploadFile);
 router.get('/download/:id', fileController.downloadFile);
-router.delete('/delete/:id', fileController.deleteFile);
+router.delete('/delete/:_id', fileController.deleteFile);
 router.get('/', fileController.fetchAllFiles);
 router.get('/share/:token', fileController.shareFile);
 

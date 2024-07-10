@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, Divider } from "@chakra-ui/react";
 import useFileHandling from "./hooks/useFileHandling";
 import useClipboard from "./hooks/useClipboard";
 import FileUploadForm from "./components/FileUploadForm";
@@ -28,6 +28,7 @@ function App() {
         handleUpload={handleUpload}
         fileInputRef={fileInputRef}
       />
+      <Divider border="2px solid blue" marginY={"4"} />
       <UploadedFilesList
         files={files}
         shareableUrl={shareableUrl}
@@ -37,12 +38,11 @@ function App() {
       />
       <LoadingModal
         isOpen={uploading}
-        onClose={() => setUploading(false)}
-        message="Uploading file, please wait a moment..."
+        message="Uploading file, please wait a moment...
+        Go to page No.1 to access the recently added files"
       />
       <LoadingModal
         isOpen={deleting}
-        onClose={() => setDeleting(false)}
         message="Deleting file, please wait a moment..."
       />
     </Box>

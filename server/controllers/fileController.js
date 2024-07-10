@@ -1,6 +1,7 @@
-const pool = require("../database/connection");
 const crypto = require('crypto');
 const multer = require('multer');
+const File = require('../models/File'); // Adjust the path as needed
+
 
 // Multer setup
 const storage = multer.memoryStorage();
@@ -14,59 +15,53 @@ const generateToken = () => {
 const uploadFile = async (req, res) => {
   const file = req.file;
   if (!file) {
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).send('No file selected.');
   }
   const token = generateToken();
 
-  const client = await pool.connect();
   try {
-    const query = 'INSERT INTO files (filename, mimetype, content, size, token) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-    const values = [file.originalname, file.mimetype, file.buffer, file.size, token];
+    const newFile = new File({
+      filename: file.originalname,
+      mimetype: file.mimetype,
+      content: file.buffer,
+      size: file.size,
+      token: token
+    });
 
-    const result = await client.query(query, values);
-    const fileId = result.rows[0].id;
-    res.status(200).send({ message: `File uploaded successfully with ID: ${fileId}`, downloadLink: `http://localhost:3001/api/files/download/${fileId}`, shareableLink: `http://localhost:3001/api/files/share/${token}` });
+    await newFile.save();
+    res.status(200).send({ message: `File uploaded successfully with ID: ${newFile._id}`, downloadLink: `http://localhost:3001/api/files/download/${newFile._id}`, shareableLink: `http://localhost:3001/api/files/share/${token}` });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
-  } finally {
-    client.release();
   }
 };
 
 const downloadFile = async (req, res) => {
   const fileId = req.params.id;
 
-  const client = await pool.connect();
   try {
-    const query = 'SELECT filename, mimetype, content FROM files WHERE id = $1';
-    const result = await client.query(query, [fileId]);
+    const file = await File.findById(fileId);
 
-    if (result.rows.length === 0) {
+    if (!file) {
       return res.status(404).send('File not found.');
     }
 
-    const file = result.rows[0];
     res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
     res.setHeader('Content-Type', file.mimetype);
     res.send(file.content);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
-  } finally {
-    client.release();
   }
 };
 
 const deleteFile = async (req, res) => {
-  const fileId = req.params.id;
+  const fileId = req.params._id;
 
-  const client = await pool.connect();
   try {
-    const query = 'DELETE FROM files WHERE id = $1 RETURNING id';
-    const result = await client.query(query, [fileId]);
+    const file = await File.findByIdAndDelete(fileId);
 
-    if (result.rows.length === 0) {
+    if (!file) {
       return res.status(404).send('File not found.');
     }
 
@@ -74,46 +69,35 @@ const deleteFile = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
-  } finally {
-    client.release();
   }
 };
 
 const fetchAllFiles = async (req, res) => {
-  const client = await pool.connect();
   try {
-    const query = 'SELECT * FROM files';
-    const result = await client.query(query);
-    res.status(200).json(result.rows);
+    const files = await File.find().select('mimetype size createdAt filename token');
+    res.status(200).json(files);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
-  } finally {
-    client.release();
   }
 };
 
 const shareFile = async (req, res) => {
   const token = req.params.token;
 
-  const client = await pool.connect();
   try {
-    const query = 'SELECT filename, mimetype, content FROM files WHERE token = $1';
-    const result = await client.query(query, [token]);
+    const file = await File.findOne({ token });
 
-    if (result.rows.length === 0) {
+    if (!file) {
       return res.status(404).send('File not found.');
     }
 
-    const file = result.rows[0];
     res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
     res.setHeader('Content-Type', file.mimetype);
     res.send(file.content);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
-  } finally {
-    client.release();
   }
 };
 
